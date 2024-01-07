@@ -9,6 +9,9 @@ const path = require('path');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
+
+app.use(express.static("public"));
+
 app.post('/upload', upload.array('mp3Files'), async (req, res) => {
   try {
     const files = req.files;
@@ -25,7 +28,7 @@ app.post('/upload', upload.array('mp3Files'), async (req, res) => {
 
       // Get necessary information (you can adjust as needed)
       const { artist, title } = metadata.common;
-      const destinationFolder = path.join('organized', artist, title);
+      const destinationFolder = path.join('uploads','organized', artist, title);
 
       // Create destination folder if not exists
       if (!fs.existsSync(destinationFolder)) {

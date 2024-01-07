@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropArea = document.getElementById('dropArea');
     const fileList = document.getElementById('fileList');
     const fileInput = document.getElementById('fileInput');
+    
+    let filesArray = [];
 
     dropArea.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -29,6 +31,39 @@ document.addEventListener('DOMContentLoaded', () => {
       handleFiles(files);
     });
 
+    fileList.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const activeItem = document.elementFromPoint(e.clientX, e.clientY);
+    if (activeItem && activeItem !== fileList) {
+        fileList.insertBefore(draggedItem, activeItem);
+    }
+    });
+
+    fileList.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const activeItem = document.elementFromPoint(e.clientX, e.clientY);
+        if (activeItem && activeItem !== fileList){
+            fileList.insertBefore(draggedItem, activeItem);
+        }
+    });
+
+    function handleFiles(files) {
+
+        for (const file of files) {
+          filesArray.push(file);
+          const listItem = document.createElement('li');
+          listItem.textContent = file.name;
+          listItem.draggable = true;
+  
+          listItem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', file.name);
+            draggedItem = listItem;
+          });
+  
+          fileList.appendChild(listItem);
+        }
+      }
+
 
     async function organizeFiles(organizedFiles) {
         try {
@@ -51,23 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
           // Handle error display or other actions
         }
       }
-      
 
-    function handleFiles(files) {
-      fileList.innerHTML = ''; // Clear previous list
-      
-      for (const file of files) {
-        const listItem = document.createElement('li');
-        listItem.textContent = file.name;
-        listItem.draggable = true;
 
-        listItem.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text/plain', file.name);
-        });
-
-        fileList.appendChild(listItem);
-      }
-    }
+ 
 
 
     document.getElementById('organizeButton').addEventListener('click', () => {
