@@ -1,0 +1,14 @@
+#dropArea {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    margin: 20px;
+  }
+  .fileList {
+    list-style: none;
+    padding: 0;
+  }
+  .fileList li {
+    margin: 5px 0;
+    cursor: pointer;
+  }
