@@ -69,11 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('mp3Files', filesArray[index], name);
           });
       
-          // Log FormData entries
+         
           for (const entry of formData.entries()) {
             console.log("what is this       ",entry);
           }
-      
+           console.log(formData)
           const response = await fetch('/upload', {
             method: 'POST',          
             body: formData,
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log(data); 
         } catch (error) {
           console.error('Error:', error);
-          // Handle error display or other actions
+         
         }
       }
     
@@ -122,17 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
       
           const newIndex = items.indexOf(draggedItem);
       
-          // Update the items' data-index attributes after reordering
+    
           items.forEach((item, index) => {
             item.setAttribute('data-index', index);
           });
       
-          // Update the filesArray based on the new order
+         
           const [removed] = filesArray.splice(sourceIndex, 1);
           filesArray.splice(newIndex, 0, removed);
       
-          // Update the displayed list in the UI to reflect the reordering
-          // Remove all items from the fileList
+         
           fileList.innerHTML = '';
       
           filesArray.forEach((file, index) => {
@@ -158,14 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const file of filesArray) {
           const { artist , title } = await extractMetadata(file)
           const cleanedName = file.name.replace('[SPOTIFY-DOWNLOADER.COM]', '').trim();
-          // Add your logic here to organize files and structure them
-          // For this example, just a simple structure is created
+       
           organizedFiles.push({ name: cleanedName, destination: `uploads/organized/${artist}/${title}` });
         }
         console.log("organizedFiles:    " , organizedFiles)
-        // Send the organized files to the server for processing
+       
         organizeFiles(organizedFiles);
       });
-    // You can add more logic here to handle organizing the files
-    // and interacting with the backend for processing and creating folders.
+
   });
