@@ -13,10 +13,12 @@ app.use(upload.array('mp3Files'));
 app.use(express.static("public"));
 
 app.post('/upload', upload.array('mp3Files'), async (req, res) => {
+    console.log("heayyy")
   try { 
-      
+    console.log('Received POST request to /upload'); 
+    console.log("Request headers       ", req.headers) 
     const files = req.files;
-   
+    console.log('Received files:', req.files);
 
     // Array to hold organized files
     const organizedFiles = [];

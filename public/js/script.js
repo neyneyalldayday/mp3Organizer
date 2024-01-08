@@ -62,22 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
 
-    async function organizeFiles(organizedFiles) {
-     
+      async function organizeFiles(organizedFiles) {
         try {        
           const formData = new FormData();
-          organizedFiles.forEach(({file, name}) => {           
-            formData.append('mp3Files', file, name)
-          })
+          organizedFiles.forEach(({ name, destination }, index) => {           
+            formData.append('mp3Files', filesArray[index], name);
+          });
+      
+          // Log FormData entries
+          for (const entry of formData.entries()) {
+            console.log("what is this       ",entry);
+          }
+      
           const response = await fetch('/upload', {
             method: 'POST',          
             body: formData,
           });
-    
+      
           if (!response.ok) {
             throw new Error('Error organizing files');
           }
-    
+      
           const data = await response.json();
           console.log(data); 
         } catch (error) {
@@ -130,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
           // Remove all items from the fileList
           fileList.innerHTML = '';
       
-          // Re-create the list items based on the updated filesArray
           filesArray.forEach((file, index) => {
             const listItem = document.createElement('li');
             listItem.textContent = file.name;
@@ -143,12 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
       
             fileList.appendChild(listItem);
-          });
-      
-          console.log('Source Index:', sourceIndex);
-          console.log('New Index:', newIndex);
-          console.log('Target Index:', targetIndex);
-          console.log('filesArray:', filesArray);
+          });          
         }
       });
 
