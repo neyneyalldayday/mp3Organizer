@@ -8,8 +8,6 @@ const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
-app.use(upload.array('mp3Files'));
-
 app.use(express.static("public"));
 
 app.post('/upload', upload.array('mp3Files'), async (req, res) => {
