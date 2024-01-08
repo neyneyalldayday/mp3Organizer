@@ -32,7 +32,7 @@ app.post('/upload', upload.array('mp3Files'), async (req, res) => {
 
       // Get necessary information (you can adjust as needed)
       const { artist, title } = metadata.common;
-      const destinationFolder = path.join('uploads','organized', artist, title);
+      const destinationFolder = path.join(__dirname, 'uploads','organized', artist, title);
 
       // Create destination folder if not exists
       if (!fs.existsSync(destinationFolder)) {
