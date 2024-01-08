@@ -39,40 +39,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     });
 
-    fileList.addEventListener("drop", (e) => {
-        e.preventDefault();
-        const activeItem = document.elementFromPoint(e.clientX, e.clientY);
-        if (activeItem && activeItem !== fileList){
-            fileList.insertBefore(draggedItem, activeItem);
-        }
-    });
 
     function handleFiles(files) {
+    console.log("function is happening")
+       for (let i = 0; i < files.length; i++){
 
-        for (const file of files) {
-          filesArray.push(file);
-          const listItem = document.createElement('li');
-          listItem.textContent = file.name;
-          listItem.draggable = true;
-  
-          listItem.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', file.name);
-            draggedItem = listItem;
-          });
-  
-          fileList.appendChild(listItem);
-        }
+        const file = files[i];
+        filesArray.push(file);
+        const listItem = document.createElement('li');
+        listItem.textContent = file.name;
+        listItem.draggable = true;
+        listItem.setAttribute('data-index', i);
+
+        listItem.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', file.name);
+          draggedItem = listItem;
+        });
+
+
+        fileList.appendChild(listItem)
+       }
       }
 
 
     async function organizeFiles(organizedFiles) {
-        try {
+     
+        try {        
+          const formData = new FormData();
+          organizedFiles.forEach(({file, name}) => {           
+            formData.append('mp3Files', file, name)
+          })
           const response = await fetch('/upload', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ files: organizedFiles }),
+            method: 'POST',          
+            body: formData,
           });
     
           if (!response.ok) {
@@ -86,27 +85,88 @@ document.addEventListener('DOMContentLoaded', () => {
           // Handle error display or other actions
         }
       }
+    
+      function extractMetadata(file) {
+        return new Promise((resolve, reject) => {
+          jsmediatags.read(file, {
+            onSuccess: function (tag) {
+              const artist = tag.tags.artist || 'Unknown Artist';
+              const title = tag.tags.title || 'Unknown Title';
+              resolve({ artist, title });
+            },
+            onError: function (error) {
+              reject(error);
+            }
+          });
+        });
+      }  
+      
+      
+      fileList.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const activeItem = document.elementFromPoint(e.clientX, e.clientY);
+        if (activeItem && activeItem !== fileList) {
+          const sourceIndex = parseInt(draggedItem.getAttribute('data-index'));
+          const targetIndex = parseInt(activeItem.getAttribute('data-index'));
+      
+          const items = [...fileList.getElementsByTagName('li')];
+          const sourceItem = items[sourceIndex];
+          const targetItem = items[targetIndex];
+      
+          fileList.insertBefore(draggedItem, targetItem.nextSibling);
+      
+          const newIndex = items.indexOf(draggedItem);
+      
+          // Update the items' data-index attributes after reordering
+          items.forEach((item, index) => {
+            item.setAttribute('data-index', index);
+          });
+      
+          // Update the filesArray based on the new order
+          const [removed] = filesArray.splice(sourceIndex, 1);
+          filesArray.splice(newIndex, 0, removed);
+      
+          // Update the displayed list in the UI to reflect the reordering
+          // Remove all items from the fileList
+          fileList.innerHTML = '';
+      
+          // Re-create the list items based on the updated filesArray
+          filesArray.forEach((file, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = file.name;
+            listItem.draggable = true;
+            listItem.setAttribute('data-index', index);
+      
+            listItem.addEventListener('dragstart', (e) => {
+              e.dataTransfer.setData('text/plain', file.name);
+              draggedItem = listItem;
+            });
+      
+            fileList.appendChild(listItem);
+          });
+      
+          console.log('Source Index:', sourceIndex);
+          console.log('New Index:', newIndex);
+          console.log('Target Index:', targetIndex);
+          console.log('filesArray:', filesArray);
+        }
+      });
 
-
- 
-
-
-    document.getElementById('organizeButton').addEventListener('click', () => {
-        const filesList = document.getElementById('fileList').getElementsByTagName('li');
+      document.getElementById('organizeButton').addEventListener('click', async () => {
+        
         const organizedFiles = [];
     
-        for (const fileListItem of filesList) {
-          const fileName = fileListItem.textContent;
+        for (const file of filesArray) {
+          const { artist , title } = await extractMetadata(file)
+          const cleanedName = file.name.replace('[SPOTIFY-DOWNLOADER.COM]', '').trim();
           // Add your logic here to organize files and structure them
           // For this example, just a simple structure is created
-          organizedFiles.push({ name: fileName, destination: 'desired_destination' });
+          organizedFiles.push({ name: cleanedName, destination: `uploads/organized/${artist}/${title}` });
         }
-    
+        console.log("organizedFiles:    " , organizedFiles)
         // Send the organized files to the server for processing
         organizeFiles(organizedFiles);
       });
-
-
     // You can add more logic here to handle organizing the files
     // and interacting with the backend for processing and creating folders.
   });

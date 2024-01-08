@@ -8,13 +8,15 @@ const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
-
+app.use(upload.array('mp3Files'));
 
 app.use(express.static("public"));
 
 app.post('/upload', upload.array('mp3Files'), async (req, res) => {
-  try {
+  try { 
+      
     const files = req.files;
+   
 
     // Array to hold organized files
     const organizedFiles = [];
@@ -55,7 +57,7 @@ app.post('/upload', upload.array('mp3Files'), async (req, res) => {
   }
 });
 
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
