@@ -63,31 +63,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       async function organizeFiles(organizedFiles) {
-        try {        
+        try {
           const formData = new FormData();
-          organizedFiles.forEach(({ name, destination }, index) => {           
-            formData.append('mp3Files', filesArray[index], name);
-          });
-      
-         
+          await Promise.all(
+            organizeFiles.map(async ({ name }, index) => {
+              formData.append("mp3Files", filesArray[index], name);
+            })
+          );
+
           for (const entry of formData.entries()) {
-            console.log("what is this       ",entry);
+            console.log("what is this       ", entry);
           }
-           console.log(formData)
-          const response = await fetch('/upload', {
-            method: 'POST',          
+          console.log(formData);
+
+          const response = await fetch("/upload", {
+            method: "POST",
             body: formData,
           });
-      
+
           if (!response.ok) {
-            throw new Error('Error organizing files');
+            throw new Error("Error organizing files");
           }
-      
+
           const data = await response.json();
-          console.log(data); 
+          console.log("files organized", data);
         } catch (error) {
-          console.error('Error:', error);
-         
+          console.error("Error:", error);
         }
       }
     
@@ -165,4 +166,40 @@ document.addEventListener('DOMContentLoaded', () => {
         organizeFiles(organizedFiles);
       });
 
+
+
+
+      async function clearUploads(event) {
+        event.preventDefault()
+        console.log("click")
+        try {
+          const response = await fetch('/uploads', {
+            method: 'DELETE'
+          });
+    
+          if(response.ok){
+            const notification = document.querySelector(".notificaton")
+            const message = `<p>Uploads Clear</p>`
+            notification.innerHTML = message
+            setTimeout(()=> {
+              notification.innerHTML = ''
+            },1000)
+          }
+    
+          const data = await response.json()
+          console.log(data)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+
+
+      document.querySelector('#clear').addEventListener("click", clearUploads)
+
   });
+
+
+ 
+
+
+  

@@ -1,22 +1,21 @@
 // index.js
 
-const express = require('express');
-const multer = require('multer');
-const mm = require('music-metadata');
-const fs = require('fs');
-const path = require('path');
-
+const express = require("express");
+const multer = require("multer");
+const mm = require("music-metadata");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 const app = express();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: "uploads/" });
 app.use(express.static("public"));
 
-app.post('/upload', upload.array('mp3Files'), async (req, res) => {
-    console.log("heayyy")
-  try { 
-    console.log('Received POST request to /upload'); 
-    console.log("Request headers       ", req.headers) 
+app.post("/upload", upload.array("mp3Files"), async (req, res) => {
+  try {
+    console.log("Received POST request to /upload");
+    console.log("Request headers       ", req.headers);
     const files = req.files;
-    console.log('Received files:', req.files);
+    console.log("Received files:", req.files);
 
     // Array to hold organized files
     const organizedFiles = [];
@@ -28,9 +27,18 @@ app.post('/upload', upload.array('mp3Files'), async (req, res) => {
       // Read metadata of the MP3 file
       const metadata = await mm.parseFile(filePath);
 
+      const songId = crypto
+        .createHash("md5")
+        .update(JSON.stringify(metadata))
+        .digest("hex");
       // Get necessary information (you can adjust as needed)
       const { artist, title } = metadata.common;
-      const destinationFolder = path.join(__dirname, 'uploads','organized', artist, title);
+      const destinationFolder = path.join(
+        __dirname,
+        "uploads",
+        "organized",
+        songId
+      );
 
       // Create destination folder if not exists
       if (!fs.existsSync(destinationFolder)) {
@@ -50,10 +58,30 @@ app.post('/upload', upload.array('mp3Files'), async (req, res) => {
       });
     }
 
-    res.json({ message: 'Files organized successfully!', organizedFiles });
+    res.json({ message: "Files organized successfully!", organizedFiles });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Something went wrong!' });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong!" });
+  }
+});
+
+app.delete("/uploads/", async (req, res) => {
+  try {
+    const files = fs.readdirSync("./uploads/");
+    files.forEach((file) => {
+      const filePath = path.join(__dirname, './uploads', file);
+      if (fs.lstatSync(filePath).isDirectory()) {
+        fs.rmSync(filePath, { recursive: true });
+      } else {
+        fs.unlinkSync(filePath);
+      }
+     
+    });
+
+    res.status(200).json({ message: "songs cleared" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(error);
   }
 });
 
