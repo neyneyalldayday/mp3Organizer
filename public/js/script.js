@@ -65,17 +65,19 @@ document.addEventListener('DOMContentLoaded', () => {
       async function organizeFiles(organizedFiles) {
         try {
           const formData = new FormData();
+          console.log(formData)
           await Promise.all(
-            organizeFiles.map(async ({ name }, index) => {
+            organizedFiles.map(async ({ name }, index) => {
               formData.append("mp3Files", filesArray[index], name);
             })
           );
 
           for (const entry of formData.entries()) {
-            console.log("what is this       ", entry);
+            console.log("what is this       ", entry[1].name);
+            
           }
-          console.log(formData);
-
+          console.log( "the formdatabeing sent to the backend", formData);
+          
           const response = await fetch("/upload", {
             method: "POST",
             body: formData,
@@ -86,7 +88,23 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           const data = await response.json();
-          console.log("files organized", data);
+          let newData = new Object();
+          newData = data
+
+          console.log("files organized", newData.organizedFiles);
+         
+
+          const songList = newData.organizedFiles
+          songList.forEach((song) => {
+            console.log(song.originalName)
+          })
+      
+            // for (var i = 0; i < data.organizedFiles.length; i++){
+            //   console.log(data.organizedFiles[i])
+            // }
+        
+         
+
         } catch (error) {
           console.error("Error:", error);
         }
@@ -151,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      document.getElementById('organizeButton').addEventListener('click', async () => {
+      document.getElementById('organizeButton').addEventListener('click', async (event) => {
+        event.preventDefault();
         
         const organizedFiles = [];
     
@@ -161,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
        
           organizedFiles.push({ name: cleanedName, destination: `uploads/organized/${artist}/${title}` });
         }
-        console.log("organizedFiles:    " , organizedFiles)
+        console.log("organizedFiles gueyyyy:    " , organizedFiles)
        
         organizeFiles(organizedFiles);
       });
